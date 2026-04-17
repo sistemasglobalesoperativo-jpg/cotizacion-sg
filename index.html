@@ -418,15 +418,21 @@ function renderSaving(){
   const disc = getDiscount(screens,months);
   const discM = DISC_MONTHS[months]||0;
   const discS = DISC_SCREENS[screens]||0;
-  const totalPlan = getPrice(screens,months,tariff);
+
+  // Read extra discount
+  const _xEl = document.getElementById('extra-pct');
+  const _xOn = document.getElementById('extra-toggle').classList.contains('on');
+  const xPct = _xOn && _xEl ? Math.min(50, Math.max(0, parseFloat(_xEl.value)||0)) : 0;
+
+  const basePlan = getPrice(screens,months,tariff);
+  const totalPlan = basePlan * (1 - xPct/100);
   const sinDescuento = getBasePrice(screens,months,tariff);
   const sinPlan = getBasePrice(screens,1,tariff)*months;
-  const ahorroDesc = sinDescuento - totalPlan;
-  const ahorroPlan = sinPlan - sinDescuento;
   const ahorroTotal = sinPlan - totalPlan;
   const ppmPlan = totalPlan/(screens*months);
   const ppmBase = getBasePrice(screens,1,tariff)/screens;
   const barW = Math.min(100,Math.round((ahorroTotal/sinPlan)*100));
+  const discTotalPct = Math.round((ahorroTotal/sinPlan)*100);
 
   const hasDisc = disc > 0;
   const hasPlanSaving = months > 1;
@@ -440,7 +446,7 @@ function renderSaving(){
 <div class="saving-box">
   <div class="saving-head">
     <div class="saving-title">Ahorro del cliente${hasDisc?' · Descuento aplicado: '+disc+'%':''}</div>
-    <div class="saving-badge">− ${Math.round((ahorroTotal/sinPlan)*100)}% total</div>
+    <div class="saving-badge">− ${discTotalPct}% total</div>
   </div>
   ${hasDisc?`<div style="display:flex;gap:8px;margin-bottom:10px;">
     <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:7px 10px;">
@@ -484,13 +490,27 @@ function renderSaving(){
 function render(){
   const total=getPrice(screens,months,tariff);
   const disc=getDiscount(screens,months);
-  document.getElementById('r-total').textContent=fmt(total);
-  document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''} · Frecuencia 4 min${disc>0?' · Dto. '+disc+'%':''}`;
-  document.getElementById('r-ppm').textContent=fmt(total/(screens*months));
-  document.getElementById('r-avg').textContent=fmt(total/months);
-  document.getElementById('r-avg-iva').textContent=fmt((total/months)*1.19);
+
+  // Descuento adicional
+  const extraPctEl2 = document.getElementById('extra-pct');
+  const extraActive2 = document.getElementById('extra-toggle').classList.contains('on');
+  const extraPct2 = extraActive2 && extraPctEl2 ? Math.min(50, Math.max(0, parseFloat(extraPctEl2.value)||0)) : 0;
+  const extraDisc2 = total * extraPct2 / 100;
+  const totalFinal2 = total - extraDisc2;
+
+  // Totales con descuento adicional aplicado
+  const ppmFinal = totalFinal2 / (screens * months);
+  const avgFinal = totalFinal2 / months;
+  const discLabel = disc > 0 ? ' · Dto. plan ' + disc + '%' : '';
+  const extraLabel = extraPct2 > 0 ? ' · Dto. adic. ' + extraPct2 + '%' : '';
+
+  document.getElementById('r-total').textContent=fmt(totalFinal2);
+  document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''} · Frecuencia 4 min${discLabel}${extraLabel}`;
+  document.getElementById('r-ppm').textContent=fmt(ppmFinal);
+  document.getElementById('r-avg').textContent=fmt(avgFinal);
+  document.getElementById('r-avg-iva').textContent=fmt(avgFinal*1.19);
   document.getElementById('r-scr').textContent=screens+' pantalla'+(screens>1?'s':'');
-  document.getElementById('r-iva').textContent=fmt(total*1.19);
+  document.getElementById('r-iva').textContent=fmt(totalFinal2*1.19);
   document.getElementById('scr-val').textContent=screens;
   document.getElementById('mo-val').innerHTML=months+' <span style="font-size:14px;font-weight:400;color:#8A96AB;">mes'+(months>1?'es':'')+'</span>';
   document.getElementById('scr-r').value=screens;
@@ -499,13 +519,10 @@ function render(){
   document.getElementById('footer-summary').innerHTML=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''}${disc>0?' · Dto. '+disc+'%':''}<br><strong>${fmt(total)}</strong> + IVA`;
   document.querySelectorAll('.m-btn').forEach(b=>b.classList.toggle('active',+b.dataset.m===months));
 
-  // Fiscal summary
-  const extraPctEl = document.getElementById('extra-pct');
-  const extraActive = document.getElementById('extra-toggle').classList.contains('on');
-  const extraPct = extraActive && extraPctEl ? Math.min(50, Math.max(0, parseFloat(extraPctEl.value)||0)) : 0;
+  // Fiscal summary — usa extraPct2 y total ya calculados arriba
   const subtotal = total;
-  const extraDisc = subtotal * extraPct / 100;
-  const baseGravable = subtotal - extraDisc;
+  const extraDisc = extraDisc2;
+  const baseGravable = totalFinal2;
   const ivaVal = baseGravable * 0.19;
   const totalFinal = baseGravable + ivaVal;
 
@@ -515,9 +532,9 @@ function render(){
   document.getElementById('f-total').textContent = fmt(totalFinal);
 
   const extraRow = document.getElementById('f-extra-row');
-  if(extraPct > 0){
+  if(extraPct2 > 0){
     extraRow.style.display = 'flex';
-    document.getElementById('f-extra-lbl').textContent = 'Descuento adicional (' + extraPct + '%)';
+    document.getElementById('f-extra-lbl').textContent = 'Descuento adicional (' + extraPct2 + '%)';
     document.getElementById('f-extra-val').textContent = '− ' + fmt(extraDisc);
   } else {
     extraRow.style.display = 'none';
