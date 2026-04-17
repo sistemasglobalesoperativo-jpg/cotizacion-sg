@@ -433,10 +433,10 @@ function renderSaving(){
   const _xEl2 = document.getElementById('extra-pct');
   const _xOn2 = document.getElementById('extra-toggle').classList.contains('on');
   const xPct2 = _xOn2 && _xEl2 ? Math.min(50,Math.max(0,parseFloat(_xEl2.value)||0)) : 0;
-  const totalFinal = totalPlan * (1 - xPct2/100);  // total con ambos descuentos
-  const precioTotalXPantalla = totalFinal / screens; // total por pantalla todos los meses
-  const ppmFinal = precioTotalXPantalla / months;    // precio por pantalla por mes
-  const ppmBaseFinal = ppmBase;                      // tarifa base sin descuento
+  const totalFinal = totalPlan * (1 - xPct2/100);    // total con ambos descuentos
+  const costoXMes = totalFinal / months;              // total pagado por todas las pantallas al mes
+  const ppmFinal = costoXMes / screens;               // precio por pantalla por mes
+  const ppmBaseFinal = ppmBase;                       // tarifa base sin descuento
 
   const hasDisc = disc > 0;
   const hasPlanSaving = months > 1;
@@ -473,20 +473,7 @@ function renderSaving(){
   </div>
   <div class="bar-labels"><span>Sin descuentos</span><span>Con este plan · ahorra ${Math.round((ahorroTotal/sinPlan)*100)}%</span></div>
   <div class="bar-bg"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
-  <div style="display:flex;gap:8px;margin-top:10px;">
-    <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
-      <div class="sav-cell-lbl">Total pagado por ${screens} pantalla${screens>1?'s':''} / mes</div>
-      <div class="sav-cell-val">${fmt(totalFinal/screens)}</div>
-    </div>
-    <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
-      <div class="sav-cell-lbl">Precio por pantalla / mes</div>
-      <div class="sav-cell-val">${fmt(ppmFinal)}</div>
-    </div>
-    <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
-      <div class="sav-cell-lbl">Ahorro por pantalla / mes</div>
-      <div class="sav-cell-val">${fmt(ppmBaseFinal-ppmFinal)}</div>
-    </div>
-  </div>
+
 </div>`;
   setTimeout(()=>{const b=document.getElementById('bar-fill');if(b)b.style.width=barW+'%';},60);
 }
