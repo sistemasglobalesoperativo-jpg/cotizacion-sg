@@ -419,13 +419,8 @@ function renderSaving(){
   const discM = DISC_MONTHS[months]||0;
   const discS = DISC_SCREENS[screens]||0;
 
-  // Read extra discount
-  const _xEl = document.getElementById('extra-pct');
-  const _xOn = document.getElementById('extra-toggle').classList.contains('on');
-  const xPct = _xOn && _xEl ? Math.min(50, Math.max(0, parseFloat(_xEl.value)||0)) : 0;
-
-  const basePlan = getPrice(screens,months,tariff);
-  const totalPlan = basePlan * (1 - xPct/100);
+  // Green box: plan discount for header/bar, extra discount for bottom 3 cells
+  const totalPlan = getPrice(screens,months,tariff);  // con plan solo
   const sinDescuento = getBasePrice(screens,months,tariff);
   const sinPlan = getBasePrice(screens,1,tariff)*months;
   const ahorroTotal = sinPlan - totalPlan;
@@ -433,6 +428,14 @@ function renderSaving(){
   const ppmBase = getBasePrice(screens,1,tariff)/screens;
   const barW = Math.min(100,Math.round((ahorroTotal/sinPlan)*100));
   const discTotalPct = Math.round((ahorroTotal/sinPlan)*100);
+
+  // Extra discount for bottom 3 cells
+  const _xEl2 = document.getElementById('extra-pct');
+  const _xOn2 = document.getElementById('extra-toggle').classList.contains('on');
+  const xPct2 = _xOn2 && _xEl2 ? Math.min(50,Math.max(0,parseFloat(_xEl2.value)||0)) : 0;
+  const totalFinal = totalPlan * (1 - xPct2/100);
+  const ppmFinal = totalFinal/(screens*months);
+  const ppmBaseFinal = ppmBase;
 
   const hasDisc = disc > 0;
   const hasPlanSaving = months > 1;
@@ -472,15 +475,15 @@ function renderSaving(){
   <div style="display:flex;gap:8px;margin-top:10px;">
     <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
       <div class="sav-cell-lbl">Precio total por pantalla (${months} mes${months>1?'es':''})</div>
-      <div class="sav-cell-val">${fmt(totalPlan/screens)}</div>
+      <div class="sav-cell-val">${fmt(totalFinal/screens)}</div>
     </div>
     <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
       <div class="sav-cell-lbl">Precio por pantalla / mes</div>
-      <div class="sav-cell-val">${fmt(ppmPlan)}</div>
+      <div class="sav-cell-val">${fmt(ppmFinal)}</div>
     </div>
     <div style="flex:1;background:white;border:1px solid #A8DDBC;border-radius:7px;padding:8px 10px;">
       <div class="sav-cell-lbl">Ahorro por pantalla / mes</div>
-      <div class="sav-cell-val">${fmt(ppmBase-ppmPlan)}</div>
+      <div class="sav-cell-val">${fmt(ppmBaseFinal-ppmFinal)}</div>
     </div>
   </div>
 </div>`;
@@ -488,29 +491,29 @@ function renderSaving(){
 }
 
 function render(){
-  const total=getPrice(screens,months,tariff);
+  const total=getPrice(screens,months,tariff);  // precio con descuento de plan
   const disc=getDiscount(screens,months);
 
-  // Descuento adicional
+  // Descuento adicional (solo para resumen fiscal)
   const extraPctEl2 = document.getElementById('extra-pct');
   const extraActive2 = document.getElementById('extra-toggle').classList.contains('on');
   const extraPct2 = extraActive2 && extraPctEl2 ? Math.min(50, Math.max(0, parseFloat(extraPctEl2.value)||0)) : 0;
   const extraDisc2 = total * extraPct2 / 100;
-  const totalFinal2 = total - extraDisc2;
+  const totalFinal2 = total - extraDisc2;  // precio final con ambos descuentos
 
-  // Totales con descuento adicional aplicado
-  const ppmFinal = totalFinal2 / (screens * months);
-  const avgFinal = totalFinal2 / months;
+  // Cajitas y banda azul muestran SOLO descuento de plan
+  const ppmPlan = total / (screens * months);
+  const avgPlan = total / months;
   const discLabel = disc > 0 ? ' · Dto. plan ' + disc + '%' : '';
   const extraLabel = extraPct2 > 0 ? ' · Dto. adic. ' + extraPct2 + '%' : '';
 
-  document.getElementById('r-total').textContent=fmt(totalFinal2);
+  document.getElementById('r-total').textContent=fmt(total);
   document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''} · Frecuencia 4 min${discLabel}${extraLabel}`;
-  document.getElementById('r-ppm').textContent=fmt(ppmFinal);
-  document.getElementById('r-avg').textContent=fmt(avgFinal);
-  document.getElementById('r-avg-iva').textContent=fmt(avgFinal*1.19);
+  document.getElementById('r-ppm').textContent=fmt(ppmPlan);
+  document.getElementById('r-avg').textContent=fmt(avgPlan);
+  document.getElementById('r-avg-iva').textContent=fmt(avgPlan*1.19);
   document.getElementById('r-scr').textContent=screens+' pantalla'+(screens>1?'s':'');
-  document.getElementById('r-iva').textContent=fmt(totalFinal2*1.19);
+  document.getElementById('r-iva').textContent=fmt(total*1.19);
   document.getElementById('scr-val').textContent=screens;
   document.getElementById('mo-val').innerHTML=months+' <span style="font-size:14px;font-weight:400;color:#8A96AB;">mes'+(months>1?'es':'')+'</span>';
   document.getElementById('scr-r').value=screens;
@@ -519,10 +522,10 @@ function render(){
   document.getElementById('footer-summary').innerHTML=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''}${disc>0?' · Dto. '+disc+'%':''}<br><strong>${fmt(total)}</strong> + IVA`;
   document.querySelectorAll('.m-btn').forEach(b=>b.classList.toggle('active',+b.dataset.m===months));
 
-  // Fiscal summary — usa extraPct2 y total ya calculados arriba
-  const subtotal = total;
-  const extraDisc = extraDisc2;
-  const baseGravable = totalFinal2;
+  // Fiscal summary: subtotal = precio con plan, luego aplica descuento adicional
+  const subtotal = total;           // con descuento de plan solamente
+  const extraDisc = extraDisc2;     // descuento adicional en pesos
+  const baseGravable = totalFinal2; // subtotal - descuento adicional
   const ivaVal = baseGravable * 0.19;
   const totalFinal = baseGravable + ivaVal;
 
