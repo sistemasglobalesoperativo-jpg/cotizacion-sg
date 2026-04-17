@@ -501,19 +501,20 @@ function render(){
   const extraDisc2 = total * extraPct2 / 100;
   const totalFinal2 = total - extraDisc2;  // precio final con ambos descuentos
 
-  // Cajitas y banda azul muestran SOLO descuento de plan
-  const ppmPlan = total / (screens * months);
-  const avgPlan = total / months;
+  // Banda azul: muestra precio con descuento de plan
+  // Cajitas: muestran precio final con AMBOS descuentos (plan + adicional)
+  const ppmFinal2 = totalFinal2 / (screens * months);
+  const avgFinal2 = totalFinal2 / months;
   const discLabel = disc > 0 ? ' · Dto. plan ' + disc + '%' : '';
   const extraLabel = extraPct2 > 0 ? ' · Dto. adic. ' + extraPct2 + '%' : '';
 
   document.getElementById('r-total').textContent=fmt(total);
   document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''} · Frecuencia 4 min${discLabel}${extraLabel}`;
-  document.getElementById('r-ppm').textContent=fmt(ppmPlan);
-  document.getElementById('r-avg').textContent=fmt(avgPlan);
-  document.getElementById('r-avg-iva').textContent=fmt(avgPlan*1.19);
+  document.getElementById('r-ppm').textContent=fmt(ppmFinal2);
+  document.getElementById('r-avg').textContent=fmt(avgFinal2);
+  document.getElementById('r-avg-iva').textContent=fmt(avgFinal2*1.19);
   document.getElementById('r-scr').textContent=screens+' pantalla'+(screens>1?'s':'');
-  document.getElementById('r-iva').textContent=fmt(total*1.19);
+  document.getElementById('r-iva').textContent=fmt(totalFinal2*1.19);
   document.getElementById('scr-val').textContent=screens;
   document.getElementById('mo-val').innerHTML=months+' <span style="font-size:14px;font-weight:400;color:#8A96AB;">mes'+(months>1?'es':'')+'</span>';
   document.getElementById('scr-r').value=screens;
