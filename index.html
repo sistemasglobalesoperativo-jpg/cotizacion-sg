@@ -228,10 +228,17 @@
     <div class="client-block">
       <div class="cb-section">
         <h3>Datos del cliente</h3>
-        <div class="cb-field"><label>Empresa / Razón social</label><input type="text" placeholder="Nombre de la empresa"></div>
-        <div class="cb-field"><label>Contacto</label><input type="text" placeholder="Nombre del contacto"></div>
-        <div class="cb-field"><label>Correo electrónico</label><input type="email" placeholder="correo@empresa.com"></div>
-        <div class="cb-field"><label>Teléfono</label><input type="tel" placeholder="+57 300 000 0000"></div>
+        <div class="cb-field">
+          <label>Cliente</label>
+          <select id="cliente-select" onchange="autoFillCliente()" style="width:100%;border:none;border-bottom:1.5px solid #E2E8F0;padding:5px 0;font-size:13px;color:#1A1A2E;font-family:Arial,sans-serif;background:transparent;outline:none;appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderBottomColor='#185FA5'" onblur="this.style.borderBottomColor='#E2E8F0'">
+            <option value="" disabled selected>Seleccione un cliente...</option>
+            <option value="__otro__">Otro cliente...</option>
+          </select>
+        </div>
+        <div class="cb-field"><label>Empresa / Razón social</label><input type="text" id="field-empresa" placeholder="Nombre de la empresa"></div>
+        <div class="cb-field"><label>Contacto</label><input type="text" id="field-contacto" placeholder="Nombre del contacto"></div>
+        <div class="cb-field"><label>Correo electrónico</label><input type="email" id="field-correo" placeholder="correo@empresa.com"></div>
+        <div class="cb-field"><label>Teléfono</label><input type="tel" id="field-telefono" placeholder="+57 300 000 0000"></div>
       </div>
       <div class="cb-section">
         <h3>Información comercial</h3>
@@ -599,7 +606,6 @@ function updateValidUntil(){
 }
 qd.addEventListener('change',updateValidUntil);
 updateValidUntil();
-
 render();
 
 
@@ -627,6 +633,54 @@ function onDaysInput(){
   render();
 }
 
+
+
+const CLIENTES = [
+  {nombre:"Marcel Pérez",       correo:"mperez@cccartagena.org.co",                          celular:"3183980407", empresa:"Cámara de Comercio"},
+  {nombre:"Leider Torres",      correo:"comercial@prologik.com.co",                          celular:"3014317088", empresa:"Prologik (Corporturimo)"},
+  {nombre:"Marcela Giraldo",    correo:"yialgiza@gmail.com / hotelgcartagena@gmail.com",     celular:"3127942275", empresa:"Hotel G Bazurto"},
+  {nombre:"Rosa Arboleda",      correo:"director.cartagena@uan.edu.co",                      celular:"3183153914", empresa:"Universidad Antonio Nariño"},
+  {nombre:"Lewis Gamboa",       correo:"lewis.gamboa@comaderas.com",                         celular:"3176423287", empresa:"Comadera"},
+  {nombre:"Hernan Romero",      correo:"jefemercadeo@unisinucartagena.edu.co",               celular:"",           empresa:"Universidad del Sinú"},
+  {nombre:"Maria Andrea Corrales", correo:"",                                                celular:"",           empresa:"UTB"},
+  {nombre:"Jairo Almeida",      correo:"almeidaj@utb.edu.co",                               celular:"3106170875", empresa:"UTB"},
+  {nombre:"Mateo Dominguez Morelo", correo:"cotizaciones@utb.edu.co",                       celular:"",           empresa:"UTB"},
+  {nombre:"Cristian Uni Sinu",  correo:"comunicaciones@unisinucartagena.edu.co",             celular:"3042101151", empresa:"Universidad del Sinú"},
+  {nombre:"Laura Bravo",        correo:"lbravo@cccartagena.org.co",                          celular:"3228912620", empresa:"Cámara de Comercio"},
+  {nombre:"Jose Saez",          correo:"jsaenz@cccartagena.org.co",                          celular:"+57 321 740068", empresa:"Cámara de Comercio"},
+  {nombre:"Liset Florez",       correo:"",                                                   celular:"3166178974", empresa:"Politécnico de América"},
+];
+
+function buildClienteSelect(){
+  const sel = document.getElementById('cliente-select');
+  CLIENTES.forEach((c,i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = c.empresa;
+    sel.appendChild(opt);
+  });
+}
+
+function autoFillCliente(){
+  const sel = document.getElementById('cliente-select');
+  const val = sel.value;
+  if(val === '__otro__' || val === ''){
+    document.getElementById('field-empresa').value = '';
+    document.getElementById('field-contacto').value = '';
+    document.getElementById('field-correo').value = '';
+    document.getElementById('field-telefono').value = '';
+    document.getElementById('field-empresa').readOnly = false;
+    document.getElementById('field-contacto').readOnly = false;
+    document.getElementById('field-correo').readOnly = false;
+    document.getElementById('field-telefono').readOnly = false;
+    return;
+  }
+  const c = CLIENTES[parseInt(val)];
+  document.getElementById('field-empresa').value = c.empresa;
+  document.getElementById('field-contacto').value = c.nombre;
+  document.getElementById('field-correo').value = c.correo;
+  document.getElementById('field-telefono').value = c.celular;
+}
 
 function toggleExtraDisc(){
   const toggle = document.getElementById('extra-toggle');
@@ -689,6 +743,7 @@ if(sessionStorage.getItem('sg_auth') === '1'){
   });
 }
 
+window.addEventListener("DOMContentLoaded", function(){ buildClienteSelect(); });
 </script>
 </body>
 </html>
