@@ -336,7 +336,7 @@
       </div>
 
       <div class="mini-row" style="grid-template-columns:repeat(4,minmax(0,1fr));">
-        <div class="mini"><div class="mini-lbl">Costo total / mes</div><div class="mini-val" id="r-avg">–</div></div>
+        <div class="mini"><div class="mini-lbl" id="lbl-avg">Costo total / mes</div><div class="mini-val" id="r-avg">–</div></div>
         <div class="mini"><div class="mini-lbl">Precio por pantalla / mes</div><div class="mini-val" id="r-ppm">–</div></div>
         <div class="mini"><div class="mini-lbl">Total + IVA / mes</div><div class="mini-val" id="r-avg-iva">–</div></div>
         <div class="mini"><div class="mini-lbl">Pantallas contratadas</div><div class="mini-val" id="r-scr">–</div></div>
@@ -531,13 +531,14 @@ function renderSaving(){
 }
 
 function render(){
-  // In days mode, convert days to fractional months
+  // Effective period
   const effectiveMonths = (appMode==='days') ? customDays/30 : months;
-  const discMonths = (appMode==='days') ? Math.max(1,Math.round(customDays/30)) : months;
-  const total = (appMode==='days')
-    ? tariff * screens * effectiveMonths * (1 - getDiscount(screens, discMonths)/100)
-    : getPrice(screens,months,tariff);
-  const disc=getDiscount(screens,months);
+  const discMonths = (appMode==='days') ? Math.max(1, Math.round(customDays/30)) : months;
+  const disc = getDiscount(screens, discMonths);
+
+  // Total = tarifa × pantallas × período × (1 - descuento plan)
+  // Same formula for both modes — days mode just uses fractional months
+  const total = tariff * screens * effectiveMonths * (1 - disc/100);
 
   // Descuento adicional (solo para resumen fiscal)
   const extraPctEl2 = document.getElementById('extra-pct');
@@ -548,17 +549,24 @@ function render(){
 
   // Banda azul: muestra precio con descuento de plan
   // Cajitas: muestran precio final con AMBOS descuentos (plan + adicional)
-  const avgFinal2 = totalFinal2 / effectiveMonths;  // costo total por mes
-  const ppmFinal2 = avgFinal2 / screens;             // costo por pantalla por mes (o día en modo días)
+  // In days mode: show total cost; in months mode: show monthly cost
+  const avgFinal2 = appMode==='days' ? totalFinal2 : totalFinal2 / effectiveMonths;
+  const ppmFinal2 = totalFinal2 / (screens * effectiveMonths); // costo por pantalla por mes
   const discLabel = disc > 0 ? ' · Dto. plan ' + disc + '%' : '';
   const extraLabel = extraPct2 > 0 ? ' · Dto. adic. ' + extraPct2 + '%' : '';
 
   document.getElementById('r-total').textContent=fmt(total);
-  document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${months} mes${months>1?'es':''} · Frecuencia 4 min${discLabel}${extraLabel}`;
+  const periodoLabel = appMode==='days'
+    ? customDays + ' días (' + effectiveMonths.toFixed(1) + ' meses)'
+    : months + ' mes' + (months>1?'es':'');
+  document.getElementById('r-sub').textContent=`${screens} pantalla${screens>1?'s':''} · ${periodoLabel} · Frecuencia 4 min${discLabel}${extraLabel}`;
   document.getElementById('r-ppm').textContent=fmt(ppmFinal2);
   document.getElementById('r-avg').textContent=fmt(avgFinal2);
   document.getElementById('r-avg-iva').textContent=fmt(avgFinal2*1.19);
   document.getElementById('r-scr').textContent=screens+' pantalla'+(screens>1?'s':'');
+  // Update label based on mode
+  const lblAvg = document.getElementById('lbl-avg');
+  if(lblAvg) lblAvg.textContent = appMode==='days' ? 'Costo total (' + customDays + ' días)' : 'Costo total / mes';
   document.getElementById('r-iva').textContent=fmt(totalFinal2*1.19);
   document.getElementById('scr-val').textContent=screens;
   document.getElementById('mo-val').innerHTML=months+' <span style="font-size:14px;font-weight:400;color:#8A96AB;">mes'+(months>1?'es':'')+'</span>';
