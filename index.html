@@ -275,12 +275,15 @@
       <div class="cb-field" style="margin-bottom:16px;max-width:340px;">
         <label style="font-size:11px;color:#8A96AB;display:block;margin-bottom:4px;">Tarifa base por pantalla / mes</label>
         <select id="tariff-select" style="width:100%;border:none;border-bottom:1.5px solid #E2E8F0;padding:6px 0;font-size:13px;font-weight:500;color:#1A1A2E;font-family:'Inter',sans-serif;background:transparent;outline:none;appearance:none;cursor:pointer;transition:border-color .2s;" onfocus="this.style.borderBottomColor='#185FA5'" onblur="this.style.borderBottomColor='#E2E8F0'">
-          <option value="1650000">Precio 2025 — $1.650.000</option>
-          <option value="1735800" selected>Precio 2026 — $1.735.800</option>
-          <option value="825000">1 Parrilla — $825.000</option>
-          <option value="2000000">Precio de entrada — $2.000.000</option>
-          <option value="2500000">Alto poder adquisitivo — $2.500.000</option>
-          <option value="3500000">Sector Público — $3.500.000</option>
+          <option value="" disabled selected>Seleccione una tarifa...</option>
+          <option value="825000">$825.000</option>
+          <option value="1650000">$1.650.000</option>
+          <option value="1735800">$1.735.800</option>
+          <option value="2000000">$2.000.000</option>
+          <option value="2100000">$2.100.000</option>
+          <option value="2500000">$2.500.000</option>
+          <option value="3000000">$3.000.000</option>
+          <option value="3500000">$3.500.000</option>
         </select>
       </div>
 
@@ -427,12 +430,14 @@ const fmt = v => '$' + Math.round(v).toLocaleString('es-CO');
 const pct = v => Math.round(v) + '%';
 
 const TARIFFS = [
-  {label:'Precio 2025',          price:1650000},
-  {label:'Precio 2026',          price:1735800},
-  {label:'1 Parrilla',           price:825000},
-  {label:'Precio de entrada',    price:2000000},
-  {label:'Alto poder adquisit.', price:2500000},
-  {label:'Sector Público',       price:3500000},
+  {label:'$825.000',    price:825000},
+  {label:'$1.650.000',  price:1650000},
+  {label:'$1.735.800',  price:1735800},
+  {label:'$2.000.000',  price:2000000},
+  {label:'$2.100.000',  price:2100000},
+  {label:'$2.500.000',  price:2500000},
+  {label:'$3.000.000',  price:3000000},
+  {label:'$3.500.000',  price:3500000},
 ];
 
 const BASE = 1735800;
@@ -456,7 +461,7 @@ const DISC_SCREENS = {1:0,2:1,3:2,4:3,5:3.5,6:4};
 function getDiscount(s,m){ return Math.min(15, (DISC_MONTHS[m]||0)+(DISC_SCREENS[s]||0)); }
 function getPrice(s,m,t){ return getBasePrice(s,m,t)*(1-getDiscount(s,m)/100); }
 
-let tariff=1735800, screens=1, months=1;
+let tariff=0, screens=1, months=1;
 let appMode="standard";
 let customDays=30;
 
