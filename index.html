@@ -913,8 +913,9 @@ function render(){
   const xDisc = total * xPct / 100;
   const totalFinal = total - xDisc;
 
-  const avgFinal = totalFinal / effectiveMonths;
-  const ppmFinal = avgFinal / screens;
+  // In days mode: show total cost directly; in months mode: show monthly cost
+  const avgFinal = appMode === 'days' ? totalFinal : totalFinal / effectiveMonths;
+  const ppmFinal = appMode === 'days' ? totalFinal / screens : avgFinal / screens;
   const discLabel = disc>0 ? ' · Dto. plan '+disc+'%' : '';
   const extraLabel = xPct>0 ? ' · Dto. adic. '+xPct+'%' : '';
   const periodoLabel = appMode==='days'
@@ -923,9 +924,9 @@ function render(){
 
   document.getElementById('r-total').textContent = fmt(total);
   document.getElementById('r-sub').textContent = screens+' pantalla'+(screens>1?'s':'')+' · '+periodoLabel+' · Frecuencia 4 min'+discLabel+extraLabel;
-  document.getElementById('r-ppm').textContent = fmt(ppmFinal);
+  document.getElementById('r-ppm').textContent = fmt(appMode==='days' ? totalFinal/screens : ppmFinal);
   document.getElementById('r-avg').textContent = fmt(avgFinal);
-  document.getElementById('r-avg-iva').textContent = fmt(avgFinal*1.19);
+  document.getElementById('r-avg-iva').textContent = appMode==='days' ? fmt(totalFinal*1.19) : fmt(avgFinal*1.19);
   document.getElementById('r-scr').textContent = screens+' pantalla'+(screens>1?'s':'');
   document.getElementById('r-iva').textContent = fmt(totalFinal*1.19);
   document.getElementById('scr-val').textContent = screens;
@@ -951,6 +952,9 @@ function render(){
 
   const lblAvg = document.getElementById('lbl-avg');
   if(lblAvg) lblAvg.textContent = appMode==='days' ? 'Costo total ('+customDays+' días)' : 'Costo total / mes';
+  // Fix r-avg-iva label too
+  const lblIvaM = document.getElementById('r-avg-iva');
+  // avgFinal in days mode = total, in months mode = monthly avg
 
   // Fiscal summary
   const subtotal = total;
